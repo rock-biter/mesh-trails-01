@@ -11,17 +11,19 @@ import { Pane } from 'tweakpane'
  */
 // __gui__
 const config = {
-	example: 5,
+	multiplier: 50,
 }
 const pane = new Pane()
 
 pane
-	.addBinding(config, 'example', {
-		min: 0,
-		max: 10,
+	.addBinding(config, 'multiplier', {
+		min: 30,
+		max: 200,
 		step: 0.1,
 	})
-	.on('change', (ev) => console.log(ev.value))
+	.on('change', (ev) => {
+		triangleMaterial.uniforms.multiplier.value = ev.value
+	})
 
 /**
  * Scene
@@ -37,10 +39,12 @@ const scene = new THREE.Scene()
 const material = new THREE.MeshStandardMaterial({
 	color: 'coral',
 	transparent: true,
-	opacity: 0.5,
+	opacity: 1,
+	flatShading: true,
 	// blending: THREE.AdditiveBlending,
 })
-const geometry = new THREE.BoxGeometry(1, 1, 1)
+// const material = new THREE.MeshNormalMaterial()
+const geometry = new THREE.TetrahedronGeometry(1)
 const mesh = new THREE.Mesh(geometry, material)
 mesh.position.y += 0.5
 scene.add(mesh)
@@ -73,8 +77,9 @@ const triangleMaterial = new THREE.ShaderMaterial({
 		`,
 	fragmentShader: /* glsl */ `
 	uniform float opacity;
+	uniform float multiplier;
 		void main() {
-			gl_FragColor = vec4(vec3(opacity),opacity * 20.);
+			gl_FragColor = vec4(vec3(opacity),opacity * multiplier);
 	// 		#include <tonemapping_fragment>
 	// #include <colorspace_fragment>
 		}
@@ -85,6 +90,7 @@ const triangleMaterial = new THREE.ShaderMaterial({
 	depthTest: false,
 	uniforms: {
 		opacity: new THREE.Uniform(1),
+		multiplier: new THREE.Uniform(config.multiplier),
 	},
 	// blending: THREE.CustomBlending,
 	// blendEquation: THREE.AddEquation, // Cambia qui
@@ -127,9 +133,9 @@ const camera = new THREE.PerspectiveCamera(
 	fov,
 	sizes.width / sizes.height,
 	0.1,
-	10
+	50
 )
-camera.position.set(4, 4, 4)
+camera.position.set(7, 7, 7)
 camera.lookAt(new THREE.Vector3(0, 2.5, 0))
 
 /**
@@ -187,6 +193,7 @@ triangleMaterial.blendDstAlpha = THREE.OneFactor
  */
 // __clock__
 const clock = new THREE.Clock()
+let t = 0
 
 /**
  * frame loop
@@ -195,17 +202,22 @@ function tic() {
 	/**
 	 * tempo trascorso dal frame precedente
 	 */
-	// const deltaTime = clock.getDelta()
+	const dt = clock.getDelta()
 	/**
 	 * tempo totale trascorso dall'inizio
 	 */
-	const time = clock.getElapsedTime()
+	t += dt
 
-	mesh.rotation.x = time
-	mesh.rotation.y = time
+	triangleMaterial.uniforms.opacity.value = dt * 0.1
+
+	mesh.rotation.x = t * 2
+	mesh.rotation.y = t
+
+	mesh.position.x = Math.sin(t) * 5
+	mesh.position.z = Math.cos(t) * 5
 
 	// __controls_update__
-	controls.update()
+	controls.update(dt)
 
 	renderer.autoClearColor = false
 	renderer.render(scene, camera)
