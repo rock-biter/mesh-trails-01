@@ -47,6 +47,8 @@ const material = new THREE.MeshStandardMaterial({
 const geometry = new THREE.TetrahedronGeometry(1)
 const mesh = new THREE.Mesh(geometry, material)
 mesh.position.y += 0.5
+mesh.position.x = Math.sin(0) * 5
+mesh.position.z = Math.cos(0) * 5
 scene.add(mesh)
 
 // fullscreen mesh
@@ -79,7 +81,7 @@ const triangleMaterial = new THREE.ShaderMaterial({
 	uniform float opacity;
 	uniform float multiplier;
 		void main() {
-			gl_FragColor = vec4(vec3(opacity),opacity * multiplier);
+			gl_FragColor = vec4(vec3(0.001),opacity * multiplier);
 	// 		#include <tonemapping_fragment>
 	// #include <colorspace_fragment>
 		}
@@ -177,16 +179,6 @@ scene.add(ambientLight, directionalLight)
 scene.background = new THREE.Color('white')
 
 renderer.render(scene, camera)
-triangleMaterial.uniforms.opacity.value = 0.002
-;(triangleMaterial.blending = THREE.CustomBlending),
-	(triangleMaterial.blendEquation = THREE.AddEquation) // Cambia qui
-// blendEquation: THREE.ReverseSubtractEquation, // Cambia qui
-// blendSrc: THREE.SrcColorFactor, // Cambia qui
-triangleMaterial.blendSrc = THREE.SrcColorFactor // Cambia qui
-// blendDst: THREE.OneMinusDstAlphaFactor, // Cambia qui,
-// blendAlpha: 0.0,
-// blendSrcAlpha: THREE.One,
-triangleMaterial.blendDstAlpha = THREE.OneFactor
 
 /**
  * Three js Clock
@@ -243,4 +235,8 @@ function handleResize() {
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
 	renderer.clear()
+
+	triangleMaterial.uniforms.opacity.value = 1
+	renderer.render(scene, camera)
+	// triangleMaterial.uniforms.opacity.value = 1
 }
