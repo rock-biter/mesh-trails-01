@@ -11,18 +11,18 @@ import { Pane } from 'tweakpane'
  */
 // __gui__
 const config = {
-	multiplier: 50,
+	example: 50,
 }
 const pane = new Pane()
 
 pane
-	.addBinding(config, 'multiplier', {
-		min: 30,
-		max: 200,
-		step: 0.1,
+	.addBinding(config, 'example', {
+		min: 0,
+		max: 5,
+		step: 0.01,
 	})
 	.on('change', (ev) => {
-		triangleMaterial.uniforms.multiplier.value = ev.value
+		console.log(ev.value)
 	})
 
 /**
@@ -40,8 +40,6 @@ const material = new THREE.MeshStandardMaterial({
 	color: 'coral',
 	transparent: true,
 	opacity: 1,
-	flatShading: true,
-	// blending: THREE.AdditiveBlending,
 })
 // const material = new THREE.MeshNormalMaterial()
 const geometry = new THREE.TetrahedronGeometry(1)
@@ -50,74 +48,6 @@ mesh.position.y += 0.5
 mesh.position.x = Math.sin(0) * 5
 mesh.position.z = Math.cos(0) * 5
 scene.add(mesh)
-
-// fullscreen mesh
-// fullscreen triangle
-const triangleGeometry = new THREE.BufferGeometry()
-const triangleVertices = new Float32Array([
-	-1,
-	-1,
-	-0, // vertex 1: bottom left
-	3,
-	-1,
-	-0, // vertex 2: bottom right
-	-1,
-	3,
-	-0, // vertex 3: top left
-])
-
-triangleGeometry.setAttribute(
-	'position',
-	new THREE.BufferAttribute(triangleVertices, 3)
-)
-
-const triangleMaterial = new THREE.ShaderMaterial({
-	vertexShader: /* glsl */ `
-		void main() {
-			gl_Position = vec4(position, 1.0);
-		}
-		`,
-	fragmentShader: /* glsl */ `
-	uniform float opacity;
-	uniform float multiplier;
-		void main() {
-			gl_FragColor = vec4(vec3(0.001),opacity * multiplier);
-	// 		#include <tonemapping_fragment>
-	// #include <colorspace_fragment>
-		}
-		`,
-	transparent: true,
-	// doubleSide: THREE.DoubleSide,
-	depthWrite: false,
-	depthTest: false,
-	uniforms: {
-		opacity: new THREE.Uniform(1),
-		multiplier: new THREE.Uniform(config.multiplier),
-	},
-	// blending: THREE.CustomBlending,
-	// blendEquation: THREE.AddEquation, // Cambia qui
-	// // blendEquation: THREE.ReverseSubtractEquation, // Cambia qui
-	// // blendSrc: THREE.SrcColorFactor, // Cambia qui
-	// blendSrc: THREE.SrcColorFactor, // Cambia qui
-	// // blendDst: THREE.OneMinusDstAlphaFactor, // Cambia qui,
-	// // blendAlpha: 0.0,
-	// // blendSrcAlpha: THREE.One,
-	// blendDstAlpha: THREE.OneFactor,
-})
-
-const triangleMesh = new THREE.Mesh(triangleGeometry, triangleMaterial)
-triangleMesh.renderOrder = -2
-scene.add(triangleMesh)
-
-// __floor__
-/**
- * Plane
- */
-// const groundMaterial = new THREE.MeshStandardMaterial({ color: 'lightgray' })
-// const groundGeometry = new THREE.PlaneGeometry(10, 10)
-// groundGeometry.rotateX(-Math.PI * 0.5)
-// const ground = new THREE.Mesh(groundGeometry, groundMaterial)
-// scene.add(ground)
 
 /**
  * render sizes
@@ -152,8 +82,6 @@ const axesHelper = new THREE.AxesHelper(3)
  */
 const renderer = new THREE.WebGLRenderer({
 	antialias: window.devicePixelRatio < 2,
-	alpha: true,
-	preserveDrawingBuffer: true,
 })
 // renderer.outputColorSpace = THREE.LinearSRGBColorSpace // Aggiungi questa riga
 document.body.appendChild(renderer.domElement)
@@ -175,8 +103,6 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 1.5)
 const directionalLight = new THREE.DirectionalLight(0xffffff, 4.5)
 directionalLight.position.set(3, 10, 7)
 scene.add(ambientLight, directionalLight)
-
-scene.background = new THREE.Color('white')
 
 renderer.render(scene, camera)
 
@@ -200,8 +126,6 @@ function tic() {
 	 */
 	t += dt
 
-	triangleMaterial.uniforms.opacity.value = dt * 0.1
-
 	mesh.rotation.x = t * 2
 	mesh.rotation.y = t
 
@@ -210,8 +134,6 @@ function tic() {
 
 	// __controls_update__
 	controls.update(dt)
-
-	renderer.autoClearColor = false
 	renderer.render(scene, camera)
 
 	requestAnimationFrame(tic)
@@ -235,8 +157,4 @@ function handleResize() {
 	const pixelRatio = Math.min(window.devicePixelRatio, 2)
 	renderer.setPixelRatio(pixelRatio)
 	renderer.clear()
-
-	triangleMaterial.uniforms.opacity.value = 1
-	renderer.render(scene, camera)
-	// triangleMaterial.uniforms.opacity.value = 1
 }
